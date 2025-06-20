@@ -6,11 +6,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"go.opentelemetry.io/otel/attribute"
 	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
+
+	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/bluesky-social/indigo/models"
 	blockformat "github.com/ipfs/go-block-format"
@@ -229,9 +230,6 @@ func (sqs *SQLiteStore) GetUserRepoRev(ctx context.Context, user models.Uid) (st
 		return "", err
 	}
 	if lastShard == nil {
-		return "", nil
-	}
-	if lastShard.ID == 0 {
 		return "", nil
 	}
 
