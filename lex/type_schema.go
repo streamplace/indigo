@@ -63,7 +63,7 @@ func (s *TypeSchema) WriteRPC(w io.Writer, typename, inputname string) error {
 		inpvar = "input"
 		inpenc = s.Input.Encoding
 		switch s.Input.Encoding {
-		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingMP4:
+		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingMP4, EncodingM3U8:
 			params = fmt.Sprintf("%s, input io.Reader", params)
 		case EncodingJSON:
 			params = fmt.Sprintf("%s, input *%s", params, inputname)
@@ -90,7 +90,7 @@ func (s *TypeSchema) WriteRPC(w io.Writer, typename, inputname string) error {
 	out := "error"
 	if s.Output != nil {
 		switch s.Output.Encoding {
-		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingJSONL, EncodingMP4:
+		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingJSONL, EncodingMP4, EncodingM3U8:
 			out = "([]byte, error)"
 		case EncodingJSON:
 			outname := fname + "_Output"
@@ -123,7 +123,7 @@ func (s *TypeSchema) WriteRPC(w io.Writer, typename, inputname string) error {
 	outRet := "nil"
 	if s.Output != nil {
 		switch s.Output.Encoding {
-		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingJSONL, EncodingMP4:
+		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingJSONL, EncodingMP4, EncodingM3U8:
 			pf("buf := new(bytes.Buffer)\n")
 			outvar = "buf"
 			errRet = "nil, err"
@@ -409,7 +409,7 @@ if err := c.Bind(&body); err != nil {
 				pf("contentType := c.Request().Header.Get(\"Content-Type\")\n")
 				paramtypes = append(paramtypes, "r io.Reader", "contentType string")
 				params = append(params, "body", "contentType")
-			case EncodingMP4:
+			case EncodingMP4, EncodingM3U8:
 				pf("body := c.Request().Body\n")
 				paramtypes = append(paramtypes, "r io.Reader")
 				params = append(params, "body")
@@ -431,7 +431,7 @@ if err := c.Bind(&body); err != nil {
 			}
 			pf("var out *%s.%s\n", impname, outname)
 			returndef = fmt.Sprintf("(*%s.%s, error)", impname, outname)
-		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingJSONL, EncodingMP4:
+		case EncodingCBOR, EncodingCAR, EncodingANY, EncodingJSONL, EncodingMP4, EncodingM3U8:
 			assign = "out, handleErr"
 			pf("var out io.Reader\n")
 			returndef = "(io.Reader, error)"
@@ -458,6 +458,8 @@ if err := c.Bind(&body); err != nil {
 			pf("return c.Stream(200, \"application/jsonl\", out)\n}\n\n")
 		case EncodingMP4:
 			pf("return c.Stream(200, \"video/mp4\", out)\n}\n\n")
+		case EncodingM3U8:
+			pf("return c.Stream(200, \"application/vnd.apple.mpegurl\", out)\n}\n\n")
 		default:
 			return fmt.Errorf("unrecognized output encoding (RPC output handler return): %q", s.Output.Encoding)
 		}

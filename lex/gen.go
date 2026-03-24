@@ -22,6 +22,7 @@ const (
 	EncodingJSONL = "application/jsonl"
 	EncodingCAR   = "application/vnd.ipld.car"
 	EncodingMP4   = "video/mp4"
+	EncodingM3U8  = "application/vnd.apple.mpegurl"
 	EncodingANY   = "*/*"
 )
 
